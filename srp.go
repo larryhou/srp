@@ -70,6 +70,12 @@ func (s *SRP) ephemeralPrivate() *big.Int {
 	return s.ephemeralPrivateKey
 }
 
+func (s *SRP) pad(b []byte) []byte {
+	out := make([]byte, s.N.BitLen()>>3)
+	copy(out[len(out)-len(b):], b)
+	return out
+}
+
 // multiplierParm returns a multipler paramenter K
 // RFC 5054 2.5.3 Defines K as SHA1(N | G)
 func (s *SRP) multiplierParam() (*big.Int, error) {
@@ -83,7 +89,7 @@ func (s *SRP) multiplierParam() (*big.Int, error) {
 
 	h := s.H.New()
 	h.Write(s.N.Bytes())
-	h.Write(s.G.Bytes())
+	h.Write(s.pad(s.G.Bytes()))
 
 	k := &big.Int{}
 	s.k = k.SetBytes(h.Sum(nil))
@@ -94,8 +100,8 @@ func (s *SRP) multiplierParam() (*big.Int, error) {
 // RFC 5054 2.5.3 Defines U as SHA1(A | B)
 func (s *SRP) scramblingParam(a, b *big.Int) *big.Int {
 	h := s.H.New()
-	h.Write(b.Bytes())
-	h.Write(a.Bytes())
+	h.Write(s.pad(a.Bytes()))
+	h.Write(s.pad(b.Bytes()))
 
 	u := &big.Int{}
 	s.u = u.SetBytes(h.Sum(nil))
