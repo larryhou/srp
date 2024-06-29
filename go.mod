@@ -1,4 +1,4 @@
-module github.com/fmitra/srp
+module github.com/larryhou/srp
 
 go 1.22.4
 
